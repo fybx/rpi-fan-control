@@ -1,3 +1,6 @@
+# JetBrains IDEs
+.idea/
+
 # Potential executable names
 fan_control
 test
