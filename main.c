@@ -16,6 +16,7 @@
 #define FAN_PIN 17
 #define LOG 1
 #define LOG_FILE "/var/log/fan_control.log"
+#define STATUS "/var/log/fanstatus"
 
 #define HIGH 1
 #define LOW 0
@@ -33,58 +34,70 @@ int main(int argc, char **argv) {
     double temperature;
     int threshold;
     int variance;
+    int function;
 
-    if (argc != 3) {
-        printf("Expected threshold temperature and variance\n");
-        return -1;
-    }
+    if (argc == 2) {
+        if (!strcmp(*(argv + 1), "on")) {
+            logMessage("Unexpected token: %s\n", *(argv + 1));
+            return 1;
+        } else
+            function = 1;
+    } else if (argc == 3) {
+        threshold = atoi(*(argv + 1));
+        variance = atoi(*(argv + 2));
 
-    threshold = atoi(*(argv + 1));
-    variance  = atoi(*(argv + 2));
-
-    if (!threshold) {
-        printf("Expected integer for threshold temperature: %s\n", *(argv + 1));
-        return -2;
-    } else if (!variance) {
-        printf("Expected integer for variance: %s\n", *(argv + 2));
-        return -3;
+        if (!threshold) {
+            logMessage("Expected integer for threshold temperature: %s\n", *(argv + 1));
+            return 2;
+        } else if (!variance) {
+            logMessage("Expected integer for variance: %s\n", *(argv + 2));
+            return 3;
+        } else {
+            function = 0;
+        }
+    } else {
+        logMessage("Expected threshold temperature and variance\n");
+        return 4;
     }
 
     if (gpioInitialise() < 0) {
-        printf("Failed to initialize GPIO.\n");
-        return 1;
+        logMessage("Failed to initialize GPIO.\n");
+        return 5;
     }
 
-    gpioSetMode(FAN_PIN, PI_INPUT);
-    fanRunning = gpioRead(FAN_PIN);
+    fanRunning = getFanStatus();
+    logMessage("Fan status: %d\n", fanRunning);
     gpioSetMode(FAN_PIN, PI_OUTPUT);
 
     fd = open(TEMP_PATH, O_RDONLY);
     if (fd < 0) {
-        printf("Error opening temperature file\n");
-        return 2;
+        logMessage("Error opening temperature file\n");
+        return 6;
     }
 
     if (read(fd, buffer, sizeof(buffer)) < 0) {
-        printf("Error reading temperature\n");
+        logMessage("Error reading temperature\n");
         close(fd);
-        return 3;
+        return 7;
     }
 
     close(fd);
     temperature = atof(buffer) / 1000.0;
-    printf("CPU Temperature: %.2f°C\n", temperature);
+    logMessage("CPU Temperature: %.2f°C\n", temperature);
 
     if (!fanRunning && temperature >= threshold + variance) {
-       gpioWrite(FAN_PIN, HIGH);
-       printf("Setting pin GPIO17 to HIGH\n");
-    } else if (temperature <= threshold - variance) {
-        gpioWrite(FAN_PIN, LOW);
-        printf("Setting pin GPIO17 to LOW\n");
+        fanRunning = HIGH;
+        logMessage("Setting pin GPIO17 to HIGH\n");
     } else {
-        printf("Pin GPIO17 is already HIGH\n");
+        if (temperature <= threshold - variance) {
+            fanRunning = LOW;
+            logMessage("Setting pin GPIO17 to LOW\n");
+        } else
+            logMessage("Pin GPIO17 is already HIGH\n");
     }
+    gpioWrite(FAN_PIN, fanRunning);
 
+    writeFanStatus(fanRunning);
     gpioTerminate();
     return 0;
 }
