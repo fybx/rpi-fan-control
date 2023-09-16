@@ -21,6 +21,9 @@
 int logMessage(const char *, ...);
 
 int getFanStatus();
+
+int writeFanStatus(int);
+
 int main(int argc, char **argv) {
     int fd;
     char buffer[6];
@@ -131,4 +134,21 @@ int getFanStatus() {
 
     fclose(file);
     return status;
+}
+
+int writeFanStatus(int status) {
+    if (status != LOW && status != HIGH) {
+        logMessage("Invalid status: %d\n", status);
+        return 1;
+    }
+
+    FILE *f = fopen(STATUS, "w");
+    if (!f) {
+        logMessage("Error opening status file.\n");
+        return 2;
+    }
+
+    fprintf(f, "%d", status);
+    fclose(f);
+    return 0;
 }
