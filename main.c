@@ -19,6 +19,8 @@
 #define LOW 0
 
 int logMessage(const char *, ...);
+
+int getFanStatus();
 int main(int argc, char **argv) {
     int fd;
     char buffer[6];
@@ -110,4 +112,23 @@ int logMessage(const char *format, ...) {
 
     fclose(logFile);
     return 0;
+}
+
+int getFanStatus() {
+    int status;
+    FILE *file = fopen(STATUS, "r");
+
+    if (!file) {
+        logMessage("Error opening status file\n");
+        return -1;
+    }
+
+    if (fscanf(file, "%d", &status) != 1) {
+        logMessage("Error reading status file\n");
+        fclose(file);
+        return -2;
+    }
+
+    fclose(file);
+    return status;
 }
