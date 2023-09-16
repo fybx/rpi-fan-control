@@ -5,9 +5,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <pigpio.h>
+#include <time.h>
 
 #define TEMP_PATH "/sys/class/thermal/thermal_zone0/temp"
 #define FAN_PIN 17
@@ -15,7 +18,8 @@
 #define HIGH 1
 #define LOW 0
 
-int main(int argc, char** argv) {
+int logMessage(const char *, ...);
+int main(int argc, char **argv) {
     int fd;
     char buffer[6];
     int fanRunning;
@@ -75,5 +79,35 @@ int main(int argc, char** argv) {
     }
 
     gpioTerminate();
+    return 0;
+}
+
+int logMessage(const char *format, ...) {
+    if (!LOG) {
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "UnreachableCode"
+        return 0;
+#pragma clang diagnostic pop
+    }
+
+    FILE *logFile = fopen(LOG_FILE, "a");
+    if (!logFile) {
+        printf("Error opening log file");
+        return 1;
+    }
+
+    time_t currentTime;
+    time(&currentTime);
+    struct tm *timeInfo = localtime(&currentTime);
+
+    fprintf(logFile, "[%04d-%02d-%02d %02d:%02d:%02d] ", timeInfo->tm_year + 1900, timeInfo->tm_mon + 1,
+            timeInfo->tm_mday, timeInfo->tm_hour, timeInfo->tm_min, timeInfo->tm_sec);
+
+    va_list args;
+    va_start(args, format);
+    vfprintf(logFile, format, args);
+    va_end(args);
+
+    fclose(logFile);
     return 0;
 }
