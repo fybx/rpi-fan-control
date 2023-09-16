@@ -14,6 +14,8 @@
 
 #define TEMP_PATH "/sys/class/thermal/thermal_zone0/temp"
 #define FAN_PIN 17
+#define LOG 1
+#define LOG_FILE "/var/log/fan_control.log"
 
 #define HIGH 1
 #define LOW 0
