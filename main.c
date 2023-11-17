@@ -27,9 +27,9 @@ int getFanStatus();
 
 int writeFanStatus(int);
 
+int getCoreTemperature();
+
 int main(int argc, char **argv) {
-    int fd;
-    char buffer[6];
     int fanRunning;
     double temperature;
     int threshold;
@@ -69,20 +69,7 @@ int main(int argc, char **argv) {
     logMessage("Fan status: %d\n", fanRunning);
     gpioSetMode(FAN_PIN, PI_OUTPUT);
 
-    fd = open(TEMP_PATH, O_RDONLY);
-    if (fd < 0) {
-        logMessage("Error opening temperature file\n");
-        return 6;
-    }
-
-    if (read(fd, buffer, sizeof(buffer)) < 0) {
-        logMessage("Error reading temperature\n");
-        close(fd);
-        return 7;
-    }
-
-    close(fd);
-    temperature = atof(buffer) / 1000.0;
+    temperature = getCoreTemperature();
     logMessage("CPU Temperature: %.2f°C\n", temperature);
 
     if (!fanRunning && temperature >= threshold + variance) {
@@ -166,4 +153,24 @@ int writeFanStatus(int status) {
     fprintf(f, "%d", status);
     fclose(f);
     return 0;
+}
+
+int getCoreTemperature() {
+    int fd;
+    char buffer[6];
+
+    fd = open(TEMP_PATH, O_RDONLY);
+    if (fd < 0) {
+        logMessage("Error opening temperature file\n");
+        return -1;
+    }
+
+    if (read(fd, buffer, sizeof(buffer)) < 0) {
+        logMessage("Error reading temperature\n");
+        close(fd);
+        return -2;
+    }
+
+    close(fd);
+    return (atof(buffer) / 1000.0);
 }
