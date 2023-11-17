@@ -4,3 +4,5 @@
 # Potential executable names
 fan_control
 test
+
+.venv/
