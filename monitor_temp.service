@@ -1,0 +1,7 @@
+[Unit]
+Description=Monitors core temperature and runs GPIO fan
+
+[Service]
+Type=simple
+ExecStart=/opt/fan_control 55 5
+

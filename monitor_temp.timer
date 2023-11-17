@@ -1,0 +1,10 @@
+[Unit]
+Description=Runs temperature monitoring every minute
+
+[Timer]
+OnCalendar=*-*-* *:*:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+
