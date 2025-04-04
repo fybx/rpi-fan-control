@@ -1,0 +1,8 @@
+# Fan control daemon configuration
+temp_path = "/sys/class/thermal/thermal_zone0/temp"
+gpio_line = 17
+gpio_chip = 0
+log_path = "/var/log/fan_control.log"
+threshold = 55.0    # Temperature threshold in Celsius
+variance = 5.0      # Hysteresis variance in Celsius
+interval_ms = 1500  # Temperature checking interval in milliseconds

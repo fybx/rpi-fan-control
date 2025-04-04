@@ -1,0 +1,18 @@
+cargo-features = ["edition2024"]
+
+[package]
+name = "rpi-fan-control-oxidized"
+version = "0.1.0"
+edition = "2021"
+authors = ["Yigid BALABAN <fyb@fybx.dev>"]
+description = "A Raspberry Pi fan controller written in Rust"
+license = "MIT"
+repository = "https://github.com/fybx/rpi-fan-control-oxidized"
+
+[dependencies]
+libgpiod = "0.2.2"
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
+log = "0.4"
+simplelog = "0.12"
+ctrlc = "3.4"
