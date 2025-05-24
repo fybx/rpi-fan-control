@@ -22,7 +22,7 @@ fn main() {
     }).expect("Error setting Ctrl-C handler");
 
     // Load configuration
-    let config_path = "fan_control_config.toml";
+    let config_path = "/var/fan_control/config.toml";
     let config = match Config::load(config_path) {
         Ok(config) => config,
         Err(e) => {
